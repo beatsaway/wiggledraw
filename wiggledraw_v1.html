@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pressure-Sensitive Drawing</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+        canvas {
+            background: white;
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            touch-action: none;
+        }
+        .controls {
+            margin: 15px 0;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .pressure-display {
+            font-size: 14px;
+            color: #666;
+        }
+        button {
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        .file-input {
+            display: none;
+        }
+        .animation-controls {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .animation-settings {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .animation-settings input {
+            width: 60px;
+            padding: 3px;
+        }
+        label {
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Pressure-Sensitive Drawing</h1>
+    <div class="controls">
+        <input type="color" id="colorPicker" value="#000000">
+        <input type="range" id="sizeRange" min="1" max="30" value="5">
+        <span id="sizeValue">5px</span>
+        <button id="clearBtn">Clear</button>
+        <button id="undoBtn">Undo (Ctrl+Z)</button>
+        <button id="saveBtn">Save 💾</button>
+        <button id="loadBtn">Load 📂</button>
+        <input type="file" id="fileInput" class="file-input" accept=".json">
+        <div class="pressure-display">Pressure: <span id="pressureValue">0</span></div>
+    </div>
+    <canvas id="drawingCanvas" width="800" height="500"></canvas>
+    <div class="animation-controls">
+        <div class="animation-settings">
+            <label for="frameDuration">Frame Speed:</label>
+            <input type="number" id="frameDuration" min="1" max="1000" value="125">
+            <label for="wiggleAmount">Wiggle:</label>
+            <input type="number" id="wiggleAmount" min="0" max="20" value="1">
+        </div>
+        <button id="animateBtn">Play Animation</button>
+        <button id="stopAnimationBtn" style="display: none;">Stop Animation</button>
+        <span id="animationStatus">Ready</span>
+    </div>
+
+    <script>
+        // Canvas setup
+        const canvas = document.getElementById('drawingCanvas');
+        const ctx = canvas.getContext('2d');
+        const colorPicker = document.getElementById('colorPicker');
+        const sizeRange = document.getElementById('sizeRange');
+        const sizeValue = document.getElementById('sizeValue');
+        const clearBtn = document.getElementById('clearBtn');
+        const undoBtn = document.getElementById('undoBtn');
+        const saveBtn = document.getElementById('saveBtn');
+        const loadBtn = document.getElementById('loadBtn');
+        const fileInput = document.getElementById('fileInput');
+        const pressureValue = document.getElementById('pressureValue');
+        const animateBtn = document.getElementById('animateBtn');
+        const stopAnimationBtn = document.getElementById('stopAnimationBtn');
+        const animationStatus = document.getElementById('animationStatus');
+        const frameDurationInput = document.getElementById('frameDuration');
+        const wiggleAmountInput = document.getElementById('wiggleAmount');
+        
+        // Drawing state
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+        let currentColor = '#000000';
+        let baseSize = 5;
+        
+        // Undo functionality
+        let drawingHistory = [];
+        const HISTORY_LIMIT = 50;
+        let currentHistoryIndex = -1;
+        
+        // Animation functionality
+        let isAnimating = false;
+        let animationRequestId = null;
+        let strokeHistory = [];
+        let frameDuration = 125;
+        let wiggleAmount = 1;
+        let lastAnimationTime = 0;
+        
+        // Initialize
+        function init() {
+            // Set up event listeners
+            canvas.addEventListener('pointerdown', startDrawing);
+            canvas.addEventListener('pointermove', draw);
+            canvas.addEventListener('pointerup', endDrawing);
+            canvas.addEventListener('pointerout', endDrawing);
+            
+            // Disable touch actions that might interfere
+            canvas.style.touchAction = 'none';
+            
+            // UI controls
+            colorPicker.addEventListener('input', (e) => {
+                currentColor = e.target.value;
+            });
+            
+            sizeRange.addEventListener('input', (e) => {
+                baseSize = parseInt(e.target.value);
+                sizeValue.textContent = `${baseSize}px`;
+            });
+            
+            clearBtn.addEventListener('click', clearCanvas);
+            undoBtn.addEventListener('click', undo);
+            saveBtn.addEventListener('click', saveCanvas);
+            loadBtn.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', loadCanvas);
+            animateBtn.addEventListener('click', toggleAnimation);
+            stopAnimationBtn.addEventListener('click', toggleAnimation);
+            frameDurationInput.addEventListener('input', updateFrameDuration);
+            wiggleAmountInput.addEventListener('input', updateWiggleAmount);
+            
+            // Set initial values
+            updateFrameDuration();
+            updateWiggleAmount();
+            
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                if (e.ctrlKey && e.key === 'z') {
+                    e.preventDefault();
+                    undo();
+                }
+                if (e.key === 'Backspace') {
+                    e.preventDefault();
+                    clearCanvas();
+                }
+            });
+            
+            // Save initial blank canvas
+            saveCanvasState();
+        }
+        
+        function updateFrameDuration() {
+            frameDuration = parseInt(frameDurationInput.value) || 16;
+        }
+        
+        function updateWiggleAmount() {
+            wiggleAmount = parseInt(wiggleAmountInput.value) || 1;
+        }
+        
+        // Drawing functions
+        function startDrawing(e) {
+            // Only respond to pen input (ignore mouse/touch unless they provide pressure)
+            if (e.pointerType === 'mouse' && e.pressure === 0.5) return;
+            
+            isDrawing = true;
+            [lastX, lastY] = getCoordinates(e);
+            
+            // Start recording a new stroke
+            strokeHistory.push({
+                points: [],
+                color: currentColor,
+                baseSize: baseSize,
+                originalPoints: [] // Store original positions
+            });
+            
+            recordPoint(e);
+            saveCanvasState();
+        }
+        
+        function draw(e) {
+            if (!isDrawing) return;
+            recordPoint(e);
+            drawWithPressure(e);
+        }
+        
+        function recordPoint(e) {
+            const [x, y] = getCoordinates(e);
+            const pressure = e.pressure || 0.5;
+            
+            // Record the point in the current stroke
+            if (strokeHistory.length > 0) {
+                const currentStroke = strokeHistory[strokeHistory.length - 1];
+                currentStroke.points.push({
+                    x, y, pressure
+                });
+                // Store original positions
+                currentStroke.originalPoints = currentStroke.points.map(p => ({...p}));
+            }
+            
+            pressureValue.textContent = pressure.toFixed(2);
+        }
+        
+        function drawWithPressure(e) {
+            const [x, y] = getCoordinates(e);
+            const pressure = e.pressure || 0.5;
+            const dynamicSize = baseSize * (pressure * 2);
+            
+            // Set opacity based on pressure (more pressure = more opaque)
+            const opacity = Math.min(1, pressure * 1.5); // Cap at 1, scale for better effect
+            
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(x, y);
+            
+            // Convert hex color to rgba with pressure-based opacity
+            const rgbaColor = hexToRgba(currentColor, opacity);
+            ctx.strokeStyle = rgbaColor;
+            
+            ctx.lineWidth = dynamicSize;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.stroke();
+            
+            lastX = x;
+            lastY = y;
+        }
+        
+        function endDrawing() {
+            isDrawing = false;
+        }
+        
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            strokeHistory = [];
+            saveCanvasState();
+        }
+        
+        // Undo functionality
+        function saveCanvasState() {
+            if (currentHistoryIndex < drawingHistory.length - 1) {
+                drawingHistory = drawingHistory.slice(0, currentHistoryIndex + 1);
+            }
+            
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            drawingHistory.push(imageData);
+            
+            if (drawingHistory.length > HISTORY_LIMIT) {
+                drawingHistory.shift();
+            } else {
+                currentHistoryIndex = drawingHistory.length - 1;
+            }
+        }
+        
+        function undo() {
+            if (currentHistoryIndex <= 0) return;
+            
+            currentHistoryIndex--;
+            const imageData = drawingHistory[currentHistoryIndex];
+            ctx.putImageData(imageData, 0, 0);
+            
+            // Remove last stroke from history
+            if (strokeHistory.length > 0) {
+                strokeHistory.pop();
+            }
+        }
+        
+        // Animation functionality
+        function toggleAnimation() {
+            if (isAnimating) {
+                stopAnimation();
+            } else {
+                startAnimation();
+            }
+        }
+        
+        function startAnimation() {
+            if (strokeHistory.length === 0) return;
+            
+            isAnimating = true;
+            animateBtn.style.display = 'none';
+            stopAnimationBtn.style.display = 'inline-block';
+            animationStatus.textContent = "Wiggling...";
+            
+            lastAnimationTime = performance.now();
+            animationRequestId = requestAnimationFrame(animateWiggle);
+        }
+        
+        function animateWiggle(timestamp) {
+            if (!isAnimating) return;
+            
+            // Check if enough time has passed based on frame duration
+            if (timestamp - lastAnimationTime < frameDuration) {
+                animationRequestId = requestAnimationFrame(animateWiggle);
+                return;
+            }
+            lastAnimationTime = timestamp;
+            
+            // Clear canvas and redraw with wiggle
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            for (const stroke of strokeHistory) {
+                applyWiggleEffect(stroke);
+                replayStroke(stroke);
+            }
+            
+            animationRequestId = requestAnimationFrame(animateWiggle);
+        }
+        
+        function applyWiggleEffect(stroke) {
+            if (wiggleAmount > 0 && stroke.originalPoints) {
+                for (let i = 0; i < stroke.points.length; i++) {
+                    stroke.points[i].x = stroke.originalPoints[i].x + (Math.random() * 2 - 1) * wiggleAmount;
+                    stroke.points[i].y = stroke.originalPoints[i].y + (Math.random() * 2 - 1) * wiggleAmount;
+                }
+            }
+        }
+        
+        function replayStroke(stroke) {
+            if (stroke.points.length < 2) return;
+            
+            ctx.beginPath();
+            ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
+            
+            for (let i = 1; i < stroke.points.length; i++) {
+                const point = stroke.points[i];
+                const dynamicSize = stroke.baseSize * (point.pressure * 2);
+                const opacity = Math.min(1, point.pressure * 1.5);
+                
+                // Convert hex color to rgba with pressure-based opacity
+                const rgbaColor = hexToRgba(stroke.color, opacity);
+                
+                ctx.lineTo(point.x, point.y);
+                ctx.strokeStyle = rgbaColor;
+                ctx.lineWidth = dynamicSize;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.stroke();
+                
+                // Move to the next point for the next segment
+                ctx.beginPath();
+                ctx.moveTo(point.x, point.y);
+            }
+        }
+        
+        function stopAnimation() {
+            isAnimating = false;
+            if (animationRequestId) {
+                cancelAnimationFrame(animationRequestId);
+                animationRequestId = null;
+            }
+            
+            animateBtn.style.display = 'inline-block';
+            stopAnimationBtn.style.display = 'none';
+            animationStatus.textContent = "Ready";
+            
+            // Restore original positions and redraw without wiggle
+            if (strokeHistory.length > 0) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                for (const stroke of strokeHistory) {
+                    if (stroke.originalPoints) {
+                        for (let i = 0; i < stroke.points.length; i++) {
+                            stroke.points[i].x = stroke.originalPoints[i].x;
+                            stroke.points[i].y = stroke.originalPoints[i].y;
+                        }
+                    }
+                    replayStroke(stroke);
+                }
+            }
+        }
+        
+        // Save/Load functionality
+        function saveCanvas() {
+            const data = {
+                width: canvas.width,
+                height: canvas.height,
+                strokes: strokeHistory.map(stroke => ({
+                    points: stroke.points,
+                    color: stroke.color,
+                    baseSize: stroke.baseSize
+                }))
+            };
+            
+            const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'drawing.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        function loadCanvas(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const json = JSON.parse(event.target.result);
+                    
+                    // Resize canvas if needed
+                    if (canvas.width !== json.width || canvas.height !== json.height) {
+                        canvas.width = json.width;
+                        canvas.height = json.height;
+                    }
+                    
+                    // Clear and store stroke history
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    strokeHistory = json.strokes || [];
+                    
+                    // Store original points for wiggle effect
+                    for (const stroke of strokeHistory) {
+                        stroke.originalPoints = stroke.points.map(p => ({...p}));
+                        replayStroke(stroke);
+                    }
+                    
+                    saveCanvasState();
+                } catch (error) {
+                    alert('Error loading file: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+            e.target.value = '';
+        }
+        
+        // Helper function to get coordinates
+        function getCoordinates(e) {
+            const rect = canvas.getBoundingClientRect();
+            return [
+                e.clientX - rect.left,
+                e.clientY - rect.top
+            ];
+        }
+        
+        // Helper function to convert hex color to rgba with opacity
+        function hexToRgba(hex, opacity) {
+            // Remove # if present
+            hex = hex.replace('#', '');
+            
+            // Parse r, g, b values
+            const r = parseInt(hex.substring(0, 2), 16);
+            const g = parseInt(hex.substring(2, 4), 16);
+            const b = parseInt(hex.substring(4, 6), 16);
+            
+            return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+        }
+        
+        // Initialize the app
+        init();
+    </script>
+</body>
+</html>
