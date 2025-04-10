@@ -3,335 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wiggle Draw App Versions</title>
+    <title>WiggleDraw - Draw Wiggle!</title>
     <style>
-        :root {
-            --primary-color: #2563eb;
-            --primary-hover: #1d4ed8;
-            --accent-color: #ef4444;
-            --newest-version-color: #10b981; /* Green color for version 1.02 */
-            --newest-version-hover: #059669;
-            --text-color: #1f2937;
-            --light-text: #6b7280;
-            --bg-color: #f3f4f6;
-            --card-bg: #ffffff;
-            --border-color: #e5e7eb;
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
-            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
-            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
-            --radius: 8px;
-            --doodle-shadow: 3px 3px 0 rgba(0,0,0,0.2);
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
         body {
-            font-family: 'Comic Sans MS', 'Marker Felt', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            line-height: 1.4;
-            color: var(--text-color);
-            background-color: var(--bg-color);
-            background-image: 
-                radial-gradient(circle at 20% 20%, rgba(236, 72, 153, 0.05) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.05) 0%, transparent 50%);
-            max-width: 1200px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
             margin: 0 auto;
-            padding: 1.5rem 0.75rem;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
         }
         
         h1 {
-            color: var(--text-color);
-            text-align: center;
-            margin-bottom: 2rem;
-            font-size: 2.5rem;
-            font-weight: 700;
-            position: relative;
-            padding-bottom: 0.75rem;
-            text-shadow: var(--doodle-shadow);
+            font-size: 3rem;
+            margin-bottom: 0;
+            color: #4a2c98;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
         }
         
-        h1::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100px;
-            height: 4px;
-            background: linear-gradient(90deg, var(--primary-color), var(--newest-version-color));
-            border-radius: 5px;
+        .slogan {
+            font-size: 1.4rem;
+            font-style: italic;
+            color: #666;
         }
         
-        .version-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
-            margin: 0 auto;
-            max-width: 1000px;
-            perspective: 1000px;
-        }
+     
         
-        .version-card {
-            background-color: var(--card-bg);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow-md);
-            overflow: hidden;
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        .versions {
             display: flex;
             flex-direction: column;
-            border: 1px solid var(--border-color);
-            position: relative;
-        }
-        
-        .version-card:hover {
-            transform: translateY(-8px) rotate(1deg);
-            box-shadow: var(--shadow-lg), 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-        
-        .card-header {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 0.8rem 1.2rem;
-            font-size: 1.2rem;
-            font-weight: 600;
-            display: flex;
             align-items: center;
-            justify-content: space-between;
-            letter-spacing: 0.5px;
+            gap: 15px;
+            margin-bottom: 40px;
         }
         
-        /* Special styling for the newest version */
-        .version-card:nth-child(3) .card-header {
-            background-color: var(--newest-version-color);
-            background-image: linear-gradient(to right, var(--newest-version-color), var(--newest-version-hover));
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-        }
-        
-        .card-body {
-            padding: 1.2rem;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        h3 {
-            margin-bottom: 0.8rem;
-            color: var(--text-color);
-            font-size: 1.3rem;
-        }
-        
-        .feature-list {
-            margin-bottom: 1.5rem;
-            padding-left: 1.5rem;
-            flex-grow: 1;
-            font-size: 1rem;
-        }
-        
-        .feature-list li {
-            margin-bottom: 0.5rem;
-            position: relative;
-        }
-        
-        .feature-list li::before {
-            content: '✏️';
-            position: absolute;
-            left: -1.5rem;
-            font-size: 0.9rem;
-        }
-        
-        /* Change icon for newest version */
-        .version-card:nth-child(3) .feature-list li::before {
-            content: '🎨';
-        }
-        
-        .btn {
+        .version-button {
             display: inline-block;
-            background-color: var(--primary-color);
+            background-color: #4a2c98;
             color: white;
+            padding: 12px 30px;
+            border-radius: 8px;
             text-decoration: none;
-            padding: 0.8rem 1rem;
-            border-radius: calc(var(--radius) - 2px);
-            width: 100%;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            width: 250px;
             text-align: center;
-            transition: all 0.3s;
-            font-weight: 600;
-            font-size: 1rem;
-            letter-spacing: 0.01em;
-            border: none;
-            cursor: pointer;
-            box-shadow: var(--doodle-shadow);
-            position: relative;
-            overflow: hidden;
         }
         
-        .btn:hover {
-            background-color: var(--primary-hover);
+        .version-button:hover {
+            background-color: #6240b7;
             transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
         
-        .version-card:nth-child(3) .btn {
-            background-color: var(--newest-version-color);
+        .current {
+            background-color: #ff6b6b;
+            position: relative;
         }
         
-        .version-card:nth-child(3) .btn:hover {
-            background-color: var(--newest-version-hover);
+        .current:hover {
+            background-color: #ff8787;
         }
         
-        .btn:after {
-            content: "";
+        .current::after {
+            content: "Latest!";
             position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 5px;
-            height: 5px;
-            background: rgba(255, 255, 255, 0.5);
-            opacity: 0;
-            border-radius: 100%;
-            transform: scale(1, 1) translate(-50%);
-            transform-origin: 50% 50%;
-        }
-
-        .btn:hover:after {
-            animation: ripple 1s ease-out;
-        }
-        
-        @keyframes ripple {
-            0% {
-                transform: scale(0, 0);
-                opacity: 0.5;
-            }
-            100% {
-                transform: scale(20, 20);
-                opacity: 0;
-            }
-        }
-        
-        .new-badge {
-            display: inline-block;
-            background-color: var(--accent-color);
+            top: -10px;
+            right: -10px;
+            background-color: #2ecc71;
             color: white;
             font-size: 0.7rem;
-            padding: 0.2rem 0.5rem;
-            border-radius: 1rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            animation: bounce 2s infinite;
+            padding: 3px 8px;
+            border-radius: 10px;
         }
         
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
-            40% {transform: translateY(-5px);}
-            60% {transform: translateY(-3px);}
+        .wiggle {
+            animation: wiggle 0.5s infinite;
+            display: inline-block;
+        }
+        
+        @keyframes wiggle {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(-3deg); }
+            50% { transform: rotate(0deg); }
+            75% { transform: rotate(3deg); }
+            100% { transform: rotate(0deg); }
         }
         
         footer {
-            margin-top: 2.5rem;
+            margin-top: 60px;
             text-align: center;
             font-size: 0.9rem;
-            color: var(--light-text);
-            padding-top: 1.5rem;
-            border-top: 1px solid var(--border-color);
+            color: #666;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
         }
         
         .nodeco {
             text-decoration: none;
-            color: var(--primary-color);
-            transition: color 0.2s;
-            font-weight: 500;
-            padding: 0.3rem 0.6rem;
-            display: inline-block;
-            border-radius: var(--radius);
+            color: #4a2c98;
+            transition: color 0.2s ease;
         }
         
         .nodeco:hover {
-            color: var(--primary-hover);
-            background-color: rgba(37, 99, 235, 0.1);
+            color: #6240b7;
         }
-
-        @media (max-width: 768px) {
-            .version-container {
-                grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-                gap: 1rem;
-            }
-            
-            body {
-                padding: 1rem 0.5rem;
-            }
-            
-            h1 {
-                font-size: 2rem;
-                margin-bottom: 1.5rem;
-                padding-bottom: 0.5rem;
-            }
-
-            .card-body {
-                padding: 1rem;
-            }
-        }
-        
     </style>
 </head>
 <body>
-    <h1>Wiggle Draw Application</h1>
-    
-    <div class="version-container">
-        <div class="version-card">
-            <div class="card-header">Version 1.0</div>
-            <div class="card-body">
-                <h3>Basic Drawing App</h3>
-                <ul class="feature-list">
-                    <li>Pressure-sensitive drawing</li>
-                    <li>Color picker and size controls</li>
-                    <li>Undo functionality</li>
-                    <li>Save and load drawings</li>
-                    <li>Wiggle animation</li>
-                </ul>
-                <a href="wiggledraw_v1.html" class="btn">Launch Version 1.0</a>
-            </div>
-        </div>
-        
-        <div class="version-card">
-            <div class="card-header">Version 1.01</div>
-            <div class="card-body">
-                <h3>Enhanced with Zoom Mode</h3>
-                <ul class="feature-list">
-                    <li>All features from Version 1.0</li>
-                    <li>Zoom in/out functionality</li>
-                    <li>Pan to navigate the canvas</li>
-                    <li>Mode switching (Draw/Zoom)</li>
-                    <li>Keyboard shortcuts</li>
-                </ul>
-                <a href="wiggledraw_v1_01.html" class="btn">Launch Version 1.01</a>
-            </div>
-        </div>
-        
-        <div class="version-card">
-            <div class="card-header">
-                Version 1.02
-                <span class="new-badge">New</span>
-            </div>
-            <div class="card-body">
-                <h3>Responsive UI Redesign</h3>
-                <ul class="feature-list">
-                    <li>All features from Version 1.01</li>
-                    <li>Responsive sidebar layout</li>
-                    <li>Compact controls for more drawing space</li>
-                    <li>Mobile-friendly interface</li>
-                    <li>Collapsible toolbox on smaller screens</li>
-                </ul>
-                <a href="wiggledraw_v1_02.html" class="btn">Launch Version 1.02</a>
-            </div>
-        </div>
+    <header>
+        <h1>Wiggle<span class="wiggle">Draw</span></h1>
+        <p class="slogan">Draw to replay in timelapse! Save it! Load it! Wiggle more! Wiggle less!</p>
+    </header>
+  
+    <div class="versions">
+        <a href="wiggledraw_v1_03/index.html" class="version-button current">WiggleDraw v1.03</a>
+        <a href="wiggledraw_v1_02.html" class="version-button">WiggleDraw v1.02</a>
+        <a href="wiggledraw_v1_01.html" class="version-button">WiggleDraw v1.01</a>
+        <a href="wiggledraw_v1.html" class="version-button">WiggleDraw v1.00</a>
     </div>
     
     <footer>
