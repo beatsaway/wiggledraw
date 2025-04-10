@@ -5,81 +5,280 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wiggle Draw App Versions</title>
     <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --accent-color: #ef4444;
+            --newest-version-color: #10b981; /* Green color for version 1.02 */
+            --newest-version-hover: #059669;
+            --text-color: #1f2937;
+            --light-text: #6b7280;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --border-color: #e5e7eb;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+            --radius: 8px;
+            --doodle-shadow: 3px 3px 0 rgba(0,0,0,0.2);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 800px;
+            font-family: 'Comic Sans MS', 'Marker Felt', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.4;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(236, 72, 153, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.05) 0%, transparent 50%);
+            max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
-            background-color: #f7f7f7;
+            padding: 1.5rem 0.75rem;
         }
+        
         h1 {
-            color: #2c3e50;
+            color: var(--text-color);
             text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #eaeaea;
+            margin-bottom: 2rem;
+            font-size: 2.5rem;
+            font-weight: 700;
+            position: relative;
+            padding-bottom: 0.75rem;
+            text-shadow: var(--doodle-shadow);
         }
+        
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--newest-version-color));
+            border-radius: 5px;
+        }
+        
         .version-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            justify-content: center;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin: 0 auto;
+            max-width: 1000px;
+            perspective: 1000px;
         }
+        
         .version-card {
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            background-color: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
             overflow: hidden;
-            transition: transform 0.3s, box-shadow 0.3s;
-            width: 100%;
-            max-width: 350px;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--border-color);
+            position: relative;
         }
+        
         .version-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+            transform: translateY(-8px) rotate(1deg);
+            box-shadow: var(--shadow-lg), 0 5px 15px rgba(0, 0, 0, 0.1);
         }
+        
         .card-header {
-            background-color: #3498db;
+            background-color: var(--primary-color);
             color: white;
-            padding: 15px;
-            font-size: 18px;
-            font-weight: bold;
+            padding: 0.8rem 1.2rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            letter-spacing: 0.5px;
         }
+        
+        /* Special styling for the newest version */
+        .version-card:nth-child(3) .card-header {
+            background-color: var(--newest-version-color);
+            background-image: linear-gradient(to right, var(--newest-version-color), var(--newest-version-hover));
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        
         .card-body {
-            padding: 20px;
+            padding: 1.2rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
         }
+        
+        h3 {
+            margin-bottom: 0.8rem;
+            color: var(--text-color);
+            font-size: 1.3rem;
+        }
+        
         .feature-list {
-            margin-bottom: 20px;
-            padding-left: 20px;
+            margin-bottom: 1.5rem;
+            padding-left: 1.5rem;
+            flex-grow: 1;
+            font-size: 1rem;
         }
+        
         .feature-list li {
-            margin-bottom: 8px;
+            margin-bottom: 0.5rem;
+            position: relative;
         }
+        
+        .feature-list li::before {
+            content: '✏️';
+            position: absolute;
+            left: -1.5rem;
+            font-size: 0.9rem;
+        }
+        
+        /* Change icon for newest version */
+        .version-card:nth-child(3) .feature-list li::before {
+            content: '🎨';
+        }
+        
         .btn {
             display: inline-block;
-            background-color: #3498db;
+            background-color: var(--primary-color);
             color: white;
             text-decoration: none;
-            padding: 10px 20px;
-            border-radius: 4px;
+            padding: 0.8rem 1rem;
+            border-radius: calc(var(--radius) - 2px);
             width: 100%;
             text-align: center;
-            transition: background-color 0.3s;
-            font-weight: bold;
+            transition: all 0.3s;
+            font-weight: 600;
+            font-size: 1rem;
+            letter-spacing: 0.01em;
+            border: none;
+            cursor: pointer;
+            box-shadow: var(--doodle-shadow);
+            position: relative;
+            overflow: hidden;
         }
+        
         .btn:hover {
-            background-color: #2980b9;
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
         }
+        
+        .version-card:nth-child(3) .btn {
+            background-color: var(--newest-version-color);
+        }
+        
+        .version-card:nth-child(3) .btn:hover {
+            background-color: var(--newest-version-hover);
+        }
+        
+        .btn:after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+
+        .btn:hover:after {
+            animation: ripple 1s ease-out;
+        }
+        
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(20, 20);
+                opacity: 0;
+            }
+        }
+        
+        .new-badge {
+            display: inline-block;
+            background-color: var(--accent-color);
+            color: white;
+            font-size: 0.7rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-5px);}
+            60% {transform: translateY(-3px);}
+        }
+        
         footer {
-            margin-top: 40px;
+            margin-top: 2.5rem;
             text-align: center;
-            font-size: 14px;
-            color: #7f8c8d;
-            padding-top: 20px;
-            border-top: 1px solid #eaeaea;
+            font-size: 0.9rem;
+            color: var(--light-text);
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
         }
+        
+        .nodeco {
+            text-decoration: none;
+            color: var(--primary-color);
+            transition: color 0.2s;
+            font-weight: 500;
+            padding: 0.3rem 0.6rem;
+            display: inline-block;
+            border-radius: var(--radius);
+        }
+        
+        .nodeco:hover {
+            color: var(--primary-hover);
+            background-color: rgba(37, 99, 235, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .version-container {
+                grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+                gap: 1rem;
+            }
+            
+            body {
+                padding: 1rem 0.5rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+                margin-bottom: 1.5rem;
+                padding-bottom: 0.5rem;
+            }
+
+            .card-body {
+                padding: 1rem;
+            }
+        }
+        
     </style>
 </head>
 <body>
@@ -102,7 +301,7 @@
         </div>
         
         <div class="version-card">
-            <div class="card-header">Version 1.1</div>
+            <div class="card-header">Version 1.01</div>
             <div class="card-body">
                 <h3>Enhanced with Zoom Mode</h3>
                 <ul class="feature-list">
@@ -112,14 +311,34 @@
                     <li>Mode switching (Draw/Zoom)</li>
                     <li>Keyboard shortcuts</li>
                 </ul>
-                <a href="wiggledraw_v1_01.html" class="btn">Launch Version 1.1</a>
+                <a href="wiggledraw_v1_01.html" class="btn">Launch Version 1.01</a>
+            </div>
+        </div>
+        
+        <div class="version-card">
+            <div class="card-header">
+                Version 1.02
+                <span class="new-badge">New</span>
+            </div>
+            <div class="card-body">
+                <h3>Responsive UI Redesign</h3>
+                <ul class="feature-list">
+                    <li>All features from Version 1.01</li>
+                    <li>Responsive sidebar layout</li>
+                    <li>Compact controls for more drawing space</li>
+                    <li>Mobile-friendly interface</li>
+                    <li>Collapsible toolbox on smaller screens</li>
+                </ul>
+                <a href="wiggledraw_v1_02.html" class="btn">Launch Version 1.02</a>
             </div>
         </div>
     </div>
     
     <footer>
-        <p>Wiggle Draw App - A pressure-sensitive drawing application with animation features.</p>
-        <p>&copy; 2025 - Created with HTML, CSS, and JavaScript</p>
+        <a href='https://www.youtube.com/@tortorkeneducation' class="nodeco">
+            🐢 Tortorken Education ©2025
+        </a><br>
+        <a href='https://buymeacoffee.com/beatsaway' class="nodeco">☕Buy Me a Coffee</a>
     </footer>
 </body>
 </html>
