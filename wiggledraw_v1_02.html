@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wiggle Draw V1.02</title>
+    <style>
+/* Base Styles */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+    /* Allow scrolling */
+    padding: 0;
+}
+
+/* App Layout */
+.app-container {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+}
+
+/* Sidebar Panel */
+.sidebar {
+    width: 220px; /* Reduced width */
+    background-color: #ffffff;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    padding: 10px; /* Reduced padding */
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Reduced gap between sections */
+    z-index: 100;
+    transition: transform 0.3s ease;
+}
+
+/* Main Content Area */
+.main-content {
+    flex: 1;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Panel Toggle Button */
+.panel-toggle {
+    display: none; /* Hidden on desktop */
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 200;
+    padding: 8px 12px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* Panel Sections */
+.control-section {
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px; /* Reduced bottom padding */
+    margin-bottom: 10px; /* Added margin for spacing */
+}
+
+.control-section h3 {
+    margin-bottom: 6px; /* Reduced space after heading */
+    font-size: 14px; /* Smaller font size */
+    color: #333;
+}
+
+/* Title */
+h1 {
+    margin: 5px 0 15px 0;
+    font-size: 1.5rem;
+    text-align: center;
+}
+
+.sidebar h1 {
+    margin: 0 0 10px 0; /* Reduced margin */
+    font-size: 1.3rem;
+}
+
+/* Canvas Container */
+.canvas-container {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 1200px;
+    /* A4 landscape aspect ratio is 1.414:1 (297mm:210mm) */
+    aspect-ratio: 1.414 / 1;
+    height: auto;
+}
+
+canvas {
+    background: white;
+    touch-action: none;
+    transform-origin: 0 0;
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+/* Control Styles */
+.controls-row {
+    display: flex;
+    gap: 5px; /* Reduced gap between items */
+    margin-bottom: 6px; /* Reduced space between rows */
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+button {
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 13px;
+    border: 1px solid #ddd;
+    background-color: #f8f8f8;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.sidebar button {
+    padding: 4px 8px; /* More compact button padding */
+    font-size: 12px; /* Smaller font */
+}
+
+button:hover {
+    background-color: #e8e8e8;
+}
+
+button.active {
+    background-color: #007bff;
+    color: white;
+    border-color: #0056b3;
+}
+
+.file-input {
+    display: none;
+}
+
+input[type="color"] {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: 1px solid #ddd;
+}
+
+input[type="range"] {
+    width: 100%;
+}
+
+.sidebar input[type="range"] {
+    margin: 2px 0;
+}
+
+input[type="number"] {
+    width: 60px;
+    padding: 4px;
+}
+
+.sidebar input[type="number"] {
+    width: 45px; /* Smaller inputs */
+    padding: 2px;
+}
+
+.size-display {
+    min-width: 30px;
+    display: inline-block;
+}
+
+.pressure-display {
+    font-size: 12px;
+    color: #666;
+    margin-top: 5px;
+}
+
+.sidebar .pressure-display {
+    font-size: 11px;
+    margin-top: 2px;
+}
+
+#pressureValue {
+    min-width: 25px;
+    display: inline-block;
+}
+
+#zoomLevel {
+    font-size: 12px;
+    min-width: auto;
+}
+
+.sidebar #zoomLevel {
+    font-size: 11px;
+}
+
+/* Last control section (no border) */
+.control-section:last-child {
+    margin-bottom: 0;
+    border-bottom: none;
+}
+
+/* Responsive Layout */
+@media (max-width: 768px) {
+    .app-container {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        height: 100vh;
+        transform: translateX(-100%); /* Hide by default on mobile */
+        width: 80%; /* Take up most of the screen but not all */
+        max-width: 250px;
+        overflow-y: auto;
+    }
+    
+    .sidebar.active {
+        transform: translateX(0); /* Show when active */
+    }
+    
+    .main-content {
+        margin-left: 0;
+        padding-top: 50px; /* Add space for the toggle button */
+    }
+    
+    .panel-toggle {
+        display: block; /* Show on mobile */
+    }
+    
+    /* Adjust sizes for smaller screens */
+    .canvas-container {
+        margin-top: 10px;
+    }
+}
+    </style>
+</head>
+<body>
+    <button id="panelToggle" class="panel-toggle">☰ Tools</button>
+    
+    <div class="app-container">
+        <!-- Left Sidebar Panel -->
+        <div id="sidebar" class="sidebar">
+
+            
+            <!-- Drawing Mode Controls -->
+            <div class="control-section">
+               
+                <div class="controls-row">
+                    <button id="drawModeBtn" class="active">Draw (D)</button>
+                    <button id="zoomModeBtn">Drag (Z)</button>
+                </div>
+                <div class="controls-row">
+                    <input type="color" id="colorPicker" value="#000000">
+                    <label for="colorPicker">Color</label>
+                </div>
+                <div class="controls-row">
+                    <label for="sizeRange">Brush Size:&nbsp;<span id="sizeValue" class="size-display">5px</span></label>
+                    <input type="range" id="sizeRange" min="1" max="30" value="5">
+                    
+                </div>
+                <div class="pressure-display">Pressure: <span id="pressureValue">0</span></div>
+            </div>
+            
+            <!-- Canvas Actions -->
+            <div class="control-section">
+                <h3>Actions</h3>
+                <div class="controls-row">
+                    <button id="clearBtn">Clear</button>
+                    <button id="undoBtn">Undo</button>
+                </div>
+                <div class="controls-row">
+                    <button id="saveBtn">Save</button>
+                    <button id="loadBtn">Load</button>
+                    <input type="file" id="fileInput" class="file-input" accept=".json">
+                </div>
+            </div>
+            
+            <!-- Zoom Controls -->
+            <div class="control-section">
+                <h3>Zoom</h3>
+                <div class="controls-row"><span id="zoomLevel">100%</span>
+                    <button id="zoomInBtn">+</button>
+                    <button id="zoomOutBtn">-</button>
+                    <button id="resetZoomBtn">Reset</button>
+                </div>
+                <div class="controls-row">
+                    
+                </div>
+            </div>
+            
+            <!-- Animation Controls -->
+            <div class="control-section">
+                <h3>Animation</h3>
+                <div class="controls-row">
+                    <label for="wiggleAmount">Wiggle:</label>
+                    <input type="number" id="wiggleAmount" min="0" max="20" value="1">
+                </div>
+                <div class="controls-row">
+                    <label for="frameDuration">Speed (ms):</label>
+                    <input type="number" id="frameDuration" min="1" max="1000" value="125">
+                </div>
+                <div class="controls-row">
+                    <button id="animateBtn">Play</button>
+                    <button id="stopAnimationBtn" style="display: none;">Stop</button>
+                    <span id="animationStatus">Ready</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <h1>A4 Landscape Drawing</h1>
+            <div class="canvas-container">
+                <canvas id="drawingCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Canvas setup
+        const canvasContainer = document.querySelector('.canvas-container');
+        const canvas = document.getElementById('drawingCanvas');
+        const ctx = canvas.getContext('2d');
+        const colorPicker = document.getElementById('colorPicker');
+        const sizeRange = document.getElementById('sizeRange');
+        const sizeValue = document.getElementById('sizeValue');
+        const clearBtn = document.getElementById('clearBtn');
+        const undoBtn = document.getElementById('undoBtn');
+        const saveBtn = document.getElementById('saveBtn');
+        const loadBtn = document.getElementById('loadBtn');
+        const fileInput = document.getElementById('fileInput');
+        const pressureValue = document.getElementById('pressureValue');
+        const animateBtn = document.getElementById('animateBtn');
+        const stopAnimationBtn = document.getElementById('stopAnimationBtn');
+        const animationStatus = document.getElementById('animationStatus');
+        const frameDurationInput = document.getElementById('frameDuration');
+        const wiggleAmountInput = document.getElementById('wiggleAmount');
+        const drawModeBtn = document.getElementById('drawModeBtn');
+        const zoomModeBtn = document.getElementById('zoomModeBtn');
+        const zoomInBtn = document.getElementById('zoomInBtn');
+        const zoomOutBtn = document.getElementById('zoomOutBtn');
+        const resetZoomBtn = document.getElementById('resetZoomBtn');
+        const zoomLevelDisplay = document.getElementById('zoomLevel');
+        
+        // Sidebar toggle functionality
+        const sidebar = document.getElementById('sidebar');
+        const panelToggle = document.getElementById('panelToggle');
+        
+        panelToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+            panelToggle.textContent = sidebar.classList.contains('active') ? '✕ Close' : '☰ Tools';
+        });
+        
+        // Hide sidebar when clicking outside on mobile
+        document.addEventListener('click', (e) => {
+            const isMobile = window.innerWidth <= 768;
+            if (isMobile && 
+                !sidebar.contains(e.target) && 
+                e.target !== panelToggle && 
+                sidebar.classList.contains('active')) {
+                sidebar.classList.remove('active');
+                panelToggle.textContent = '☰ Tools';
+            }
+        });
+        
+        // A4 aspect ratio (landscape)
+        const A4_ASPECT_RATIO = 1.414; // 297mm / 210mm
+        
+        // Set canvas size to match container with A4 landscape aspect ratio
+        function resizeCanvas() {
+            const rect = canvasContainer.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.width / A4_ASPECT_RATIO;
+            
+            // Redraw content if needed
+            if (!isAnimating && strokeHistory.length > 0) {
+                for (const stroke of strokeHistory) {
+                    replayStroke(stroke);
+                }
+            }
+            
+            updateCanvasTransform();
+        }
+        
+        // Call resize on load and when window is resized
+        window.addEventListener('resize', resizeCanvas);
+        
+        // Drawing state
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+        let currentColor = '#000000';
+        let baseSize = 5;
+        
+        // Undo functionality
+        let drawingHistory = [];
+        const HISTORY_LIMIT = 50;
+        let currentHistoryIndex = -1;
+        
+        // Animation functionality
+        let isAnimating = false;
+        let animationRequestId = null;
+        let strokeHistory = [];
+        let frameDuration = 125;
+        let wiggleAmount = 1;
+        let lastAnimationTime = 0;
+        
+        // Mode state
+        let currentMode = 'draw'; // 'draw' or 'zoom'
+        
+        // Zoom state
+        let scale = 1;
+        let offsetX = 0;
+        let offsetY = 0;
+        let startPanX = 0;
+        let startPanY = 0;
+        let isPanning = false;
+        
+        // Initialize
+        function init() {
+            // Set up event listeners for drawing/zooming
+            setupEventListeners();
+            
+            // Disable touch actions that might interfere
+            canvas.style.touchAction = 'none';
+            
+            // UI controls
+            setupUIControls();
+            
+            // Set initial values
+            updateFrameDuration();
+            updateWiggleAmount();
+            
+            // Size canvas correctly
+            resizeCanvas();
+            
+            // Add tooltip information about keyboard shortcuts
+            zoomInBtn.title = "Shortcut: + or =";
+            zoomOutBtn.title = "Shortcut: -";
+            resetZoomBtn.title = "Shortcut: 0";
+            drawModeBtn.title = "Shortcut: D";
+            zoomModeBtn.title = "Shortcut: Z";
+            
+            // Save initial blank canvas
+            saveCanvasState();
+        }
+        
+        function setupEventListeners() {
+            // Drawing & Zooming events
+            canvas.addEventListener('pointerdown', handlePointerDown);
+            canvas.addEventListener('pointermove', handlePointerMove);
+            canvas.addEventListener('pointerup', handlePointerUp);
+            canvas.addEventListener('pointerout', handlePointerUp);
+            
+            // Zoom with mouse wheel
+            canvas.addEventListener('wheel', handleWheel);
+            
+            // Keyboard shortcuts
+            document.addEventListener('keydown', handleKeyDown);
+        }
+        
+        function setupUIControls() {
+            // Mode switching
+            drawModeBtn.addEventListener('click', () => setMode('draw'));
+            zoomModeBtn.addEventListener('click', () => setMode('zoom'));
+            
+            // Drawing controls
+            colorPicker.addEventListener('input', (e) => {
+                currentColor = e.target.value;
+            });
+            
+            sizeRange.addEventListener('input', (e) => {
+                baseSize = parseInt(e.target.value);
+                sizeValue.textContent = `${baseSize}px`;
+            });
+            
+            clearBtn.addEventListener('click', clearCanvas);
+            undoBtn.addEventListener('click', undo);
+            saveBtn.addEventListener('click', saveCanvas);
+            loadBtn.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', loadCanvas);
+            
+            // Animation controls
+            animateBtn.addEventListener('click', toggleAnimation);
+            stopAnimationBtn.addEventListener('click', toggleAnimation);
+            frameDurationInput.addEventListener('input', updateFrameDuration);
+            wiggleAmountInput.addEventListener('input', updateWiggleAmount);
+            
+            // Zoom controls
+            zoomInBtn.addEventListener('click', () => changeZoom(0.1));
+            zoomOutBtn.addEventListener('click', () => changeZoom(-0.1));
+            resetZoomBtn.addEventListener('click', resetZoom);
+        }
+        
+        // Mode Management
+        function setMode(mode) {
+            currentMode = mode;
+            drawModeBtn.classList.toggle('active', mode === 'draw');
+            zoomModeBtn.classList.toggle('active', mode === 'zoom');
+            
+            // Update cursor
+            if (mode === 'draw') {
+                canvas.style.cursor = 'crosshair';
+            } else {
+                canvas.style.cursor = 'grab';
+            }
+        }
+        
+        // Event Handlers
+        function handlePointerDown(e) {
+            if (currentMode === 'draw') {
+                startDrawing(e);
+            } else if (currentMode === 'zoom') {
+                startPanning(e);
+            }
+        }
+        
+        function handlePointerMove(e) {
+            if (currentMode === 'draw' && isDrawing) {
+                draw(e);
+            } else if (currentMode === 'zoom' && isPanning) {
+                updatePanning(e);
+            }
+        }
+        
+        function handlePointerUp(e) {
+            if (currentMode === 'draw') {
+                endDrawing();
+            } else if (currentMode === 'zoom') {
+                endPanning();
+            }
+        }
+        
+        function handleKeyDown(e) {
+            // Undo: Ctrl+Z
+            if (e.ctrlKey && e.key === 'z') {
+                e.preventDefault();
+                undo();
+            }
+            // Clear: Backspace
+            if (e.key === 'Backspace') {
+                e.preventDefault();
+                clearCanvas();
+            }
+            // Zoom shortcuts
+            if (e.key === '+' || e.key === '=' || e.key === "NumpadAdd") {
+                e.preventDefault();
+                changeZoom(0.1);
+            }
+            if (e.key === '-' || e.key === '_' || e.key === "NumpadSubtract") {
+                e.preventDefault();
+                changeZoom(-0.1);
+            }
+            if (e.key === '0' || e.key === "Numpad0") {
+                e.preventDefault();
+                resetZoom();
+            }
+            // Mode switching
+            if (e.key === 'd') {
+                e.preventDefault();
+                setMode('draw');
+            }
+            if (e.key === 'z') {
+                e.preventDefault();
+                setMode('zoom');
+            }
+        }
+        
+        function handleWheel(e) {
+            e.preventDefault();
+            
+            // Calculate zoom direction
+            const delta = e.deltaY > 0 ? -0.05 : 0.05;
+            
+            // Get mouse position relative to canvas
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            // Zoom toward mouse position
+            zoomAtPoint(mouseX, mouseY, delta);
+        }
+        
+        function updateFrameDuration() {
+            frameDuration = parseInt(frameDurationInput.value) || 16;
+        }
+        
+        function updateWiggleAmount() {
+            wiggleAmount = parseInt(wiggleAmountInput.value) || 1;
+        }
+        
+        // Drawing functions
+        function startDrawing(e) {
+            isDrawing = true;
+            
+            // Get coordinates in canvas space (accounting for zoom and pan)
+            const [canvasX, canvasY] = getCanvasCoordinates(e);
+            lastX = canvasX;
+            lastY = canvasY;
+            
+            // Start recording a new stroke
+            strokeHistory.push({
+                points: [],
+                color: currentColor,
+                baseSize: baseSize,
+                originalPoints: [] // Store original positions
+            });
+            
+            recordPoint(e);
+            saveCanvasState();
+        }
+        
+        function draw(e) {
+            if (!isDrawing) return;
+            recordPoint(e);
+            drawWithPressure(e);
+        }
+        
+        function recordPoint(e) {
+            const [canvasX, canvasY] = getCanvasCoordinates(e);
+            const pressure = e.pressure || 0.5;
+            
+            // Record the point in the current stroke
+            if (strokeHistory.length > 0) {
+                const currentStroke = strokeHistory[strokeHistory.length - 1];
+                currentStroke.points.push({
+                    x: canvasX, y: canvasY, pressure
+                });
+                // Store original positions
+                currentStroke.originalPoints = currentStroke.points.map(p => ({...p}));
+            }
+            
+            pressureValue.textContent = pressure.toFixed(2);
+        }
+        
+        function drawWithPressure(e) {
+            const [canvasX, canvasY] = getCanvasCoordinates(e);
+            const pressure = e.pressure || 0.5;
+            const dynamicSize = baseSize * (pressure * 2);
+            
+            // Set opacity based on pressure (more pressure = more opaque)
+            const opacity = Math.min(1, pressure * 1.5); // Cap at 1, scale for better effect
+            
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(canvasX, canvasY);
+            
+            // Convert hex color to rgba with pressure-based opacity
+            const rgbaColor = hexToRgba(currentColor, opacity);
+            ctx.strokeStyle = rgbaColor;
+            
+            ctx.lineWidth = dynamicSize;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.stroke();
+            
+            lastX = canvasX;
+            lastY = canvasY;
+        }
+        
+        function endDrawing() {
+            isDrawing = false;
+        }
+        
+        function clearCanvas() {
+            // Save current transform
+            ctx.save();
+            
+            // Reset transform to clear entire canvas
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Restore transform
+            ctx.restore();
+            
+            strokeHistory = [];
+            saveCanvasState();
+        }
+        
+        // Undo functionality
+        function saveCanvasState() {
+            if (currentHistoryIndex < drawingHistory.length - 1) {
+                drawingHistory = drawingHistory.slice(0, currentHistoryIndex + 1);
+            }
+            
+            // Save current transform
+            ctx.save();
+            
+            // Reset transform to capture full canvas
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            
+            // Restore transform
+            ctx.restore();
+            
+            drawingHistory.push(imageData);
+            
+            if (drawingHistory.length > HISTORY_LIMIT) {
+                drawingHistory.shift();
+            } else {
+                currentHistoryIndex = drawingHistory.length - 1;
+            }
+        }
+        
+        function undo() {
+            if (currentHistoryIndex <= 0) return;
+            
+            currentHistoryIndex--;
+            const imageData = drawingHistory[currentHistoryIndex];
+            
+            // Save current transform
+            ctx.save();
+            
+            // Reset transform for full canvas operation
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.putImageData(imageData, 0, 0);
+            
+            // Restore transform
+            ctx.restore();
+            
+            // Remove last stroke from history
+            if (strokeHistory.length > 0) {
+                strokeHistory.pop();
+            }
+        }
+        
+        // Animation functionality
+        function toggleAnimation() {
+            if (isAnimating) {
+                stopAnimation();
+            } else {
+                startAnimation();
+            }
+        }
+        
+        function startAnimation() {
+            if (strokeHistory.length === 0) return;
+            
+            isAnimating = true;
+            animateBtn.style.display = 'none';
+            stopAnimationBtn.style.display = 'inline-block';
+            animationStatus.textContent = "Wiggling...";
+            
+            lastAnimationTime = performance.now();
+            animationRequestId = requestAnimationFrame(animateWiggle);
+        }
+        
+        function animateWiggle(timestamp) {
+            if (!isAnimating) return;
+            
+            // Check if enough time has passed based on frame duration
+            if (timestamp - lastAnimationTime < frameDuration) {
+                animationRequestId = requestAnimationFrame(animateWiggle);
+                return;
+            }
+            lastAnimationTime = timestamp;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            for (const stroke of strokeHistory) {
+                applyWiggleEffect(stroke);
+                replayStroke(stroke);
+            }
+            
+            animationRequestId = requestAnimationFrame(animateWiggle);
+        }
+        
+        function applyWiggleEffect(stroke) {
+            if (wiggleAmount > 0 && stroke.originalPoints) {
+                for (let i = 0; i < stroke.points.length; i++) {
+                    stroke.points[i].x = stroke.originalPoints[i].x + (Math.random() * 2 - 1) * wiggleAmount;
+                    stroke.points[i].y = stroke.originalPoints[i].y + (Math.random() * 2 - 1) * wiggleAmount;
+                }
+            }
+        }
+        
+        function replayStroke(stroke) {
+            if (stroke.points.length < 2) return;
+            
+            for (let i = 1; i < stroke.points.length; i++) {
+                const prevPoint = stroke.points[i-1];
+                const point = stroke.points[i];
+                const dynamicSize = stroke.baseSize * (point.pressure * 2);
+                const opacity = Math.min(1, point.pressure * 1.5);
+                
+                // Convert hex color to rgba with pressure-based opacity
+                const rgbaColor = hexToRgba(stroke.color, opacity);
+                
+                ctx.beginPath();
+                ctx.moveTo(prevPoint.x, prevPoint.y);
+                ctx.lineTo(point.x, point.y);
+                ctx.strokeStyle = rgbaColor;
+                ctx.lineWidth = dynamicSize;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.stroke();
+            }
+        }
+        
+        function stopAnimation() {
+            isAnimating = false;
+            if (animationRequestId) {
+                cancelAnimationFrame(animationRequestId);
+                animationRequestId = null;
+            }
+            
+            animateBtn.style.display = 'inline-block';
+            stopAnimationBtn.style.display = 'none';
+            animationStatus.textContent = "Ready";
+            
+            // Restore original positions and redraw without wiggle
+            if (strokeHistory.length > 0) {
+                // Clear canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                for (const stroke of strokeHistory) {
+                    if (stroke.originalPoints) {
+                        for (let i = 0; i < stroke.points.length; i++) {
+                            stroke.points[i].x = stroke.originalPoints[i].x;
+                            stroke.points[i].y = stroke.originalPoints[i].y;
+                        }
+                    }
+                    replayStroke(stroke);
+                }
+            }
+        }
+        
+        // Zoom and Pan Functionality
+        function startPanning(e) {
+            isPanning = true;
+            canvas.style.cursor = 'grabbing';
+            
+            // Record start position
+            const rect = canvas.getBoundingClientRect();
+            startPanX = e.clientX - rect.left;
+            startPanY = e.clientY - rect.top;
+        }
+        
+        function updatePanning(e) {
+            if (!isPanning) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // Calculate the drag distance in screen coordinates
+            const dx = x - startPanX;
+            const dy = y - startPanY;
+            
+            // Update offset (divided by scale to get the correct canvas units)
+            offsetX += dx / scale;
+            offsetY += dy / scale;
+            
+            // Update transform
+            updateCanvasTransform();
+            
+            // Reset starting point
+            startPanX = x;
+            startPanY = y;
+        }
+        
+        function endPanning() {
+            isPanning = false;
+            canvas.style.cursor = 'grab';
+        }
+        
+        function changeZoom(delta) {
+            // Calculate new scale
+            const newScale = Math.max(0.1, Math.min(10, scale + delta));
+            
+            // Zoom to center of canvas
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            zoomAtPoint(centerX, centerY, delta);
+        }
+        
+        function zoomAtPoint(x, y, delta) {
+            // Store old scale for calculation
+            const oldScale = scale;
+            
+            // Calculate new scale
+            const newScale = Math.max(0.1, Math.min(10, scale + delta));
+            
+            // Calculate zoom point in canvas coordinates (before zoom change)
+            const canvasX = x / oldScale;
+            const canvasY = y / oldScale;
+            
+            // Calculate new offsets to keep the point under cursor
+            offsetX = offsetX + (canvasX * (oldScale - newScale)) / newScale;
+            offsetY = offsetY + (canvasY * (oldScale - newScale)) / newScale;
+            
+            // Update scale
+            scale = newScale;
+            
+            // Update display
+            zoomLevelDisplay.textContent = `${Math.round(scale * 100)}%`;
+            
+            // Update transform
+            updateCanvasTransform();
+        }
+        
+        function resetZoom() {
+            scale = 1;
+            offsetX = 0;
+            offsetY = 0;
+            zoomLevelDisplay.textContent = '100%';
+            updateCanvasTransform();
+        }
+        
+        function updateCanvasTransform() {
+            // Apply CSS transform to canvas element for visual zoom
+            // Use translate3d for hardware acceleration to make panning smoother
+            canvas.style.transform = `scale(${scale}) translate3d(${offsetX}px, ${offsetY}px, 0)`;
+            
+            // Keep the transform matrix in context synchronized for proper drawing coordinates
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            
+            // Redraw if not animating
+            if (!isAnimating && strokeHistory.length > 0) {
+                // Clear canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Redraw strokes
+                for (const stroke of strokeHistory) {
+                    replayStroke(stroke);
+                }
+            }
+        }
+        // Add this function after the updateCanvasTransform function
+        function getCanvasCoordinates(e) {
+            const rect = canvas.getBoundingClientRect();
+            const screenX = e.clientX - rect.left;
+            const screenY = e.clientY - rect.top;
+            
+            // Convert screen coordinates to canvas coordinates
+            const canvasX = screenX / scale;
+            const canvasY = screenY / scale;
+            
+            return [canvasX, canvasY];
+        }
+        // Save/Load functionality
+        function saveCanvas() {
+            const data = {
+                width: canvas.width,
+                height: canvas.height,
+                strokes: strokeHistory.map(stroke => ({
+                    points: stroke.points,
+                    color: stroke.color,
+                    baseSize: stroke.baseSize
+                }))
+            };
+            
+            const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'drawing.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function loadCanvas(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const json = JSON.parse(event.target.result);
+                    
+                    // Adjust canvas if needed but maintain aspect ratio
+                    const canvasAspect = canvas.width / canvas.height;
+                    const loadedAspect = json.width / json.height;
+                    
+                    // Reset zoom
+                    resetZoom();
+                    
+                    // Clear and store stroke history
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    strokeHistory = json.strokes || [];
+                    
+                    // Store original points for wiggle effect
+                    for (const stroke of strokeHistory) {
+                        stroke.originalPoints = stroke.points.map(p => ({...p}));
+                        replayStroke(stroke);
+                    }
+                    
+                    saveCanvasState();
+                } catch (error) {
+                    alert('Error loading file: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+            e.target.value = '';
+        }
+
+        // Also add this utility function that's missing (used in the drawing code)
+        function hexToRgba(hex, alpha) {
+            // Remove # if present
+            hex = hex.replace(/^#/, '');
+            
+            // Parse the hex values
+            let r, g, b;
+            if (hex.length === 3) {
+                // For 3-digit hex codes like #FFF
+                r = parseInt(hex[0] + hex[0], 16);
+                g = parseInt(hex[1] + hex[1], 16);
+                b = parseInt(hex[2] + hex[2], 16);
+            } else {
+                // For 6-digit hex codes like #FFFFFF
+                r = parseInt(hex.substring(0, 2), 16);
+                g = parseInt(hex.substring(2, 4), 16);
+                b = parseInt(hex.substring(4, 6), 16);
+            }
+            
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        }
+        // Initialize the app
+        init();
+        </script></body></html>
