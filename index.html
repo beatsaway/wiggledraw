@@ -3,183 +3,192 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WiggleDoodle - Draw in Moving Wiggly Lines!</title>
+    <title>WiggleDoodle v1.04</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f9f9f9;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
-        
+
+        @font-face {
+            font-family: 'Comic Sans MS';
+            src: local('Comic Sans MS');
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.3;
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 12px;
+            background-color: #f7f7f7;
+        }
+
         header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 0.4rem;
+            padding: 0.7rem 0.5rem;
+            border-radius: 5px;
         }
-        
+
         h1 {
-            font-size: 3.5rem;
-            margin-bottom: 0;
-            color: #4a2c98;
-            font-family: 'Comic Sans MS', cursive, sans-serif;
-        }
-        
-        .slogan {
             font-size: 1.4rem;
-            font-style: italic;
-            color: #666;
-            margin-bottom: 2rem;
+            margin-bottom: 0.1rem;
+            font-family: 'Comic Sans MS', cursive;
+            color: #000;
         }
-        
+
+        .slogan {
+            font-size: 0.7rem;
+            color: #555;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.2;
+        }
+
+        .slogan-line {
+            display: block;
+            margin: 0.15rem 0;
+        }
+
         .trailer-container {
             position: relative;
-            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            padding-bottom: 20%;
             height: 0;
+            margin: 0.7rem 0;
+            border-radius: 5px;
             overflow: hidden;
-            max-width: 100%;
-            margin-bottom: 2.5rem;
-            border-radius: 12px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
         }
-        
+
         .trailer-container iframe {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            border-radius: 12px;
             border: none;
         }
-        
+
         .versions {
             display: flex;
             flex-wrap: wrap;
+            gap: 0.3rem;
+            margin: 0.8rem auto;
+            width: 100%;
             justify-content: center;
-            gap: 15px;
-            margin-bottom: 40px;
         }
-        
+
         .version-button {
             display: inline-block;
-            background-color: #4a2c98;
-            color: white;
-            padding: 12px 30px;
-            border-radius: 8px;
+            background-color: #f0f0f0;
+            color: #333;
+            padding: 0.4rem 0.7rem;
+            border-radius: 4px;
             text-decoration: none;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            width: 250px;
-            text-align: center;
+            font-weight: 500;
+            font-size: 0.75rem;
+            border: 1px solid #ddd;
         }
-        
+
         .version-button:hover {
-            background-color: #6240b7;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: #e5e5e5;
         }
-        
+
         .current {
-            background-color: #5555cc;
+            background-color: #e0e0e0;
+            border: 1px solid #ccc;
             position: relative;
-            transform: scale(1.1);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
-        
-        .current:hover {
-            background-color: #6868e6;
-            transform: translateY(-2px) scale(1.1);
-        }
-        
+
         .current::after {
-            content: "Latest!";
+            content: "New";
             position: absolute;
-            top: -10px;
-            right: -10px;
-            background-color: #2ecc71;
+            top: -5px;
+            right: -5px;
+            background: #aaa;
             color: white;
-            font-size: 0.7rem;
-            padding: 3px 8px;
-            border-radius: 10px;
+            font-size: 0.55rem;
+            padding: 2px 5px;
+            border-radius: 3px;
         }
-        
+
         .wiggle {
-            animation: wiggle 0.5s infinite;
+            animation: wiggle 0.8s infinite;
             display: inline-block;
+            transform-origin: 70% 70%;
         }
-        
+
         @keyframes wiggle {
             0% { transform: rotate(0deg); }
-            25% { transform: rotate(-3deg); }
-            50% { transform: rotate(0deg); }
-            75% { transform: rotate(3deg); }
+            25% { transform: rotate(-5deg); }
+            50% { transform: rotate(5deg); }
+            75% { transform: rotate(-3deg); }
             100% { transform: rotate(0deg); }
         }
-        
+
         footer {
-            margin-top: 60px;
+            padding: 0.7rem 0 0.4rem;
+            margin-top: auto;
             text-align: center;
-            font-size: 0.9rem;
-            color: #666;
-            padding-top: 20px;
-            border-top: 1px solid #ddd;
+            font-size: 0.7rem;
+            color: #777;
+            border-top: 1px solid #eee;
         }
-        
+
         .nodeco {
             text-decoration: none;
-            color: #4a2c98;
-            transition: color 0.2s ease;
-            font-weight: bold;
+            color: #555;
+            font-weight: 400;
+            display: inline-block;
+            margin: 0.2rem;
         }
-        
+
         .nodeco:hover {
-            color: #6240b7;
+            color: #333;
         }
-        
-        @media (max-width: 768px) {
+
+        @media (max-width: 600px) {
             body {
-                padding: 15px;
+                padding: 8px;
             }
+           
             
-            h1 {
-                font-size: 2.5rem;
-            }
-            
-            .slogan {
-                font-size: 1.2rem;
-            }
-            
-            .version-button {
-                width: 100%;
+            .versions {
+                flex-direction: column;
+                max-width: 90%;
             }
         }
     </style>
 </head>
 <body>
     <header>
-        <h1>Wiggle<span class="wiggle">Doodle</span></h1>
-        <p class="slogan">Draw in Moving Wiggly Lines! Wiggle 3 colours differently! Animate in Timelapse! Save and Load!</p>
+        <h1><a href="wiggledraw_v1_04/index.html" style="text-decoration: none; color: inherit;">Wiggle<span class="wiggle">Doodle</span>&nbsp;v1.04</a></h1>
+        <p class="slogan">
+            <span class="slogan-line">✏️ Draw in Moving Wiggly Lines!</span>
+            <span class="slogan-line">🌈Wiggle some colours more!</span>
+            <span class="slogan-line">⏱️Wiggle in Timelapse!</span>
+            <span class="slogan-line">💾Save and Load!</span>
+        </p>
     </header>
-
-    <div class="trailer-container">
-        <iframe src="https://www.youtube.com/embed/0LzjAu6ilKo" title="WiggleDoodle Feature Video" allowfullscreen></iframe>
-    </div>
-  
+<center>
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/0LzjAu6ilKo?si=_q9-F8y5wkJR3n-U" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></center>
     <div class="versions">
         <a href="wiggledraw_v1_04/index.html" class="version-button current">WiggleDoodle v1.04</a>
-        <a href="wiggledraw_v1_03/index.html" class="version-button">WiggleDoodle v1.03</a>
-        <a href="wiggledraw_v1_02.html" class="version-button">WiggleDoodle v1.02</a>
-        <a href="wiggledraw_v1_01.html" class="version-button">WiggleDoodle v1.01</a>
-        <a href="wiggledraw_v1.html" class="version-button">WiggleDoodle v1.00</a>
+        <a href="wiggledraw_v1_03/index.html" class="version-button">WiggleDraw v1.03</a>
+        <a href="wiggledraw_v1_02.html" class="version-button">WiggleDraw v1.02</a>
+        <a href="wiggledraw_v1_01.html" class="version-button">WiggleDraw v1.01</a>
+        <a href="wiggledraw_v1.html" class="version-button">WiggleDraw v1.00</a>
     </div>
     
     <footer>
         <a href='https://www.youtube.com/@tortorkeneducation' class="nodeco">
             🐢 Tortorken Education ©2025
-        </a><br>
+        </a> · 
         <a href='https://buymeacoffee.com/beatsaway' class="nodeco">☕Buy Me a Coffee</a>
     </footer>
 </body>
