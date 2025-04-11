@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wiggle Draw v1.04</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <button id="panelToggle" class="panel-toggle">☰ Tools</button>
+    
+    <div class="app-container">
+        <!-- Left Sidebar Panel -->
+        <div id="sidebar" class="sidebar">
+            <!-- Drawing Mode Controls -->
+            <div class="control-section">
+                <div class="app-title">
+                    <span style="font-family: 'Comic Sans MS', cursive; text-decoration: none; color: #333; font-size: 16px; display: inline-block; margin-bottom: 10px; text-align: center; font-weight: bold;">Wiggle <span class="wiggle-text">Doodle</span></span> <span style="font-family: Arial, sans-serif; color: #333; font-size: 16px;">v1.04</span>
+                </div>
+                <div class="controls-row">
+                    <input type="color" id="colorPicker" value="#000000">
+                    <div class="size-pressure-container">
+                        <span class="size-pressure-label">Brush Size:&nbsp;<span id="sizeValue" class="size-display">5px</span></span>
+                        <span class="size-pressure-label">Pressure: <span id="pressureValue">0</span></span>
+                    </div>
+                    <input type="range" id="sizeRange" min="1" max="30" value="5">
+                </div>
+                <div class="controls-row">
+                    <button id="drawModeBtn" class="active">Draw (D)</button>
+                    <button id="zoomModeBtn">Drag (D)</button>
+                </div>
+            </div>
+            
+            
+            <!-- Animation Controls -->
+            <div class="control-section">
+                <h3>Wiggle all by<input type="number" id="wiggleBase" min="0" max="30" value="0"></h3>
+                <div class="controls-row">
+                    <input type="color" id="wiggleColor" value="#000000">
+                    <label for="wiggleAmount">👈</label>
+                    <input type="number" id="wiggleAmount" min="0" max="30" value="1">more
+                </div>
+                <div class="controls-row">
+                    <input type="color" id="wiggleColor2" value="#888888">
+                    <label for="wiggleAmount2">👈</label>
+                    <input type="number" id="wiggleAmount2" min="0" max="30" value="11">more
+                </div>
+                <div class="controls-row">
+                    <input type="color" id="wiggleColor3" value="#CCCCCC">
+                    <label for="wiggleAmount3">👈</label>
+                    <input type="number" id="wiggleAmount3" min="0" max="30" value="0">more
+                </div>
+                <div class="controls-row">
+                    <button id="toggleAnimationBtn" style="display: none;">Wiggle</button>
+                    <label for="fps" title="Frames Per Second">FPS:</label>
+                    <input type="number" id="fps" min="1" max="60" value="8" title="Frames Per Second">
+                </div>
+                <div class="controls-row">
+                    <button id="timelapseBtn" style="display: none;">Timelapse</button>
+                </div>
+            </div>
+            
+            <!-- Zoom Controls -->
+            <div class="control-section">
+                <h3>Zoom</h3>
+                <div class="controls-row">
+                    <span id="zoomLevel">100%</span>
+                    <button id="zoomInBtn">+</button>
+                    <button id="zoomOutBtn">-</button>
+                    <button id="resetZoomBtn">Reset</button>
+                </div>
+            </div>
+            <!-- Canvas Actions -->
+            <div class="control-section">
+                <h3>Actions</h3>
+                <div class="controls-row">
+                    <button id="undoBtn" title="Shortcut: Ctrl+Z">Undo</button>
+                    <button id="saveBtn" title="Shortcut: Ctrl+S">Save</button>
+                    <button id="loadBtn" title="Shortcut: Ctrl+L">Load</button>
+                    <input type="file" id="fileInput" class="file-input" accept=".json">
+                </div>
+            </div>
+
+            <!-- Credits -->
+            <div class="control-section credits">
+                <a href='https://www.youtube.com/@imtortorken' class="nodeco">
+                    I'm🐢tortor Ken ©2025
+                </a><br>
+                <a href='https://buymeacoffee.com/beatsaway' class="nodeco">☕Buy Me a Coffee</a>
+            </div>
+            
+        </div>
+        
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <div class="canvas-container">
+                <canvas id="drawingCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load JavaScript modules -->
+    <script src="js/canvas.js"></script>
+    <script src="js/drawing.js"></script>
+    <script src="js/wiggle.js"></script>
+    <script src="js/animation.js"></script>
+    <script src="js/zoom.js"></script>
+    <script src="js/file.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
