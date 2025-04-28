@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wiggle Draw V1.05</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <button id="panelToggle" class="panel-toggle">☰ Tools</button>
+    
+    <div class="app-container">
+        <!-- Left Sidebar Panel -->
+        <div id="sidebar" class="sidebar">
+            <!-- Drawing Mode Controls -->
+            <div class="control-section">
+                <div class="app-title">
+                    <a href="https://buymeacoffee.com/beatsaway" target="_blank" style="font-family: 'Comic Sans MS', cursive; text-decoration: none; color: #333; font-size: 16px; display: block; margin-bottom: 10px; font-weight: bold; text-align: center;">Wiggle <span class="wiggle-text">Draw</span> V1.05</a>
+                </div>
+                <div class="controls-row">
+                    <input type="color" id="colorPicker" value="#000000">
+                   
+                    <label for="sizeRange">Brush Size:&nbsp;<span id="sizeValue" class="size-display">5px</span></label>
+                    <input type="range" id="sizeRange" min="1" max="30" value="5">
+                </div>
+                <div class="controls-row">
+                    <button id="drawModeBtn" class="active">Draw (D)</button>                    
+                    
+                    <button id="zoomModeBtn">Drag (D)</button>
+                
+                    <button id="rulerModeBtn">📏(R)</button>
+                </div>
+                <div class="pressure-display">Pressure: <span id="pressureValue">0</span></div>
+            </div>
+            
+            <!-- Canvas Actions -->
+            <div class="control-section">
+                <h3>Actions</h3>
+                <div class="controls-row">
+                    <button id="undoBtn" title="Shortcut: Ctrl+Z">Undo</button>
+                    <button id="saveBtn" title="Shortcut: Ctrl+S">Save</button>
+                    <button id="loadBtn" title="Shortcut: Ctrl+L">Load</button>
+                    <input type="file" id="fileInput" class="file-input" accept=".json">
+                </div>
+            </div>
+            
+            <!-- Zoom Controls -->
+            <div class="control-section">
+                <h3>Zoom</h3>
+                <div class="controls-row">
+                    <span id="zoomLevel">100%</span>
+                    <button id="zoomInBtn">+</button>
+                    <button id="zoomOutBtn">-</button>
+                    <button id="resetZoomBtn">Reset</button>
+                </div>
+            </div>
+            
+            <!-- Animation Controls -->
+            <div class="control-section">
+                <h3>Animation</h3>
+                <div class="controls-row">
+                    <label for="wiggleAmount">Wiggle:</label>
+                    <input type="number" id="wiggleAmount" min="0" max="30" value="1">
+                </div>
+                <div class="controls-row">
+                    <label for="frameDuration">Frame (ms):</label>
+                    <input type="number" id="frameDuration" min="1" max="2048" value="125">
+                </div>
+                <div class="controls-row">
+                    <button id="wiggleBtn">Wiggle</button>
+                    <button id="stopAnimationBtn" style="display: none;">Stop</button>
+                    <button id="timelapseBtn">Timelapse</button>
+                    <label class="loop-label">
+                        <input type="checkbox" id="loopCheckbox">
+                        ♾️
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <div class="canvas-container">
+                <canvas id="drawingCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load JavaScript modules -->
+    <script src="js/canvas.js"></script>
+    <script src="js/drawing.js"></script>
+    <script src="js/animation.js"></script>
+    <script src="js/zoom.js"></script>
+    <script src="js/file.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
