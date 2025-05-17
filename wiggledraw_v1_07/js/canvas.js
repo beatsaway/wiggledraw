@@ -60,9 +60,11 @@ class CanvasManager {
         // Keep the transform matrix in context synchronized
         this.ctx.setTransform(1, 0, 0, 1, 0, 0);
         
+        // Always clear the canvas before redrawing
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        
         // Redraw if not animating
         if (!window.animationManager.isWiggling && window.strokeHistory.length > 0) {
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
             for (const stroke of window.strokeHistory) {
                 window.animationManager.replayStroke(stroke);
             }
@@ -173,7 +175,7 @@ class CanvasManager {
             ctx.save();
             ctx.globalAlpha = baseAlpha;
             ctx.beginPath();
-            ctx.moveTo(x0 + x, y0 -4);
+            ctx.moveTo(x0 + x, y0 -3);
             ctx.lineTo(x0 + x - h * tan45, y0 + h);
             ctx.stroke();
             ctx.restore();
