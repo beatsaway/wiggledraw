@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wiggle Doodle V1.7</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <button id="panelToggle" class="panel-toggle">☰ Tools</button>
+    
+    <div class="app-container">
+        <!-- Left Sidebar Panel -->
+        <div id="sidebar" class="sidebar">
+            <!-- Drawing Mode Controls -->
+            <div class="control-section">
+                <div class="app-title">
+                    <a href="https://buymeacoffee.com/beatsaway" target="_blank" style="font-family: 'Comic Sans MS', cursive; text-decoration: none; color: #333; font-size: 16px; display: block; margin-bottom: 10px; font-weight: bold; text-align: center;">Wiggle <span class="wiggle-text">Doodle</span> V1.07</a>
+                </div>
+                <div class="controls-row">
+                    <input type="color" id="colorPicker" value="#000000">
+                   
+                    <label for="sizeRange">Brush Size:&nbsp;<span id="sizeValue" class="size-display">5px</span></label>
+                    <input type="range" id="sizeRange" min="1" max="30" value="5">
+                </div>
+                <div class="controls-row">
+                    <button id="drawModeBtn" class="active">Draw (D)</button>                    
+                    
+                    <button id="zoomModeBtn">Drag (D)</button>
+                
+                    <button id="rulerModeBtn">📏(R)</button>
+                </div>
+                <div class="pressure-display">Pressure: <span id="pressureValue">0</span></div>
+            </div>
+            
+            <!-- Canvas Actions -->
+            <div class="control-section">
+                <h3>Actions</h3>
+                <div class="controls-row">
+                    <button id="undoBtn" title="Shortcut: Ctrl+Z">Undo</button>
+                    <button id="saveBtn" title="Shortcut: Ctrl+S">Save</button>
+                    <button id="loadBtn" title="Shortcut: Ctrl+L">Load</button>
+                    <input type="file" id="fileInput" class="file-input" accept=".json">
+                    <select id="exampleDropdown">
+                        <option value="blank"> </option>
+                    </select>
+                    <button id="loadExampleBtn">Load Example</button>
+                </div>
+            </div>
+            
+            <!-- Zoom Controls -->
+            <div class="control-section">
+                <h3>View</h3>
+                <div class="controls-row">
+                    <span id="zoomLevel">100%</span>
+                    <button id="zoomInBtn">+</button>
+                    <button id="zoomOutBtn">-</button>
+                    <button id="resetZoomBtn">Reset</button>
+                    <select id="gridType">
+                        <option value=""> </option>
+                        <option value="isometric">isometric</option>
+                        <option value="oblique">oblique</option>
+                        <option value="obliso">obliso</option>
+                    </select>
+                </div>
+                <div class="controls-row">
+                    <label for="gridOpacitySlider">Grid Darkness:</label>
+                    <input type="range" id="gridOpacitySlider" min="0" max="1" step="0.01" value="0.25">
+                </div>
+            </div>
+            
+            <!-- Animation Controls -->
+            <div class="control-section">
+                <h3>Animation</h3>
+                <div class="controls-row">
+                    <label for="frameDuration">Frame (ms):</label>
+                    <input type="number" id="frameDuration" min="1" max="2048" value="125">
+                </div>
+                <div class="controls-row">
+                    <button id="wiggleBtn">Wiggle</button>
+                    <button id="stopAnimationBtn" style="display: none;">Stop</button>
+                    
+                    <input type="number" id="wiggleAmount" min="0" max="30" value="1">
+                </div>
+                <div class="controls-row">
+                    <button id="timelapseBtn">Timelapse</button>
+                    <div class="checkbox-emoji" title="Loop timelapse">
+                        <label class="timelapse-label">
+                            <input type="checkbox" id="loopCheckbox">
+                            ♾️
+                        </label>
+                    </div>
+                    <div class="checkbox-emoji" title="Manual timelapse (use arrow keys)">
+                        <label class="timelapse-label">
+                            <input type="checkbox" id="manualTimelapseCheckbox">
+                            👈
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+        
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <div class="canvas-container">
+                <canvas id="drawingCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load JavaScript modules -->
+    <script src="js/canvas.js"></script>
+    <script src="js/drawing.js"></script>
+    <script src="js/animation.js"></script>
+    <script src="js/zoom.js"></script>
+    <script src="js/file.js"></script>
+    <script src="js/app.js"></script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dropdown = document.getElementById('exampleDropdown');
+        fetch('examples/')
+            .then(response => response.text())
+            .then(text => {
+                // Parse directory listing (works if server returns HTML directory listing)
+                const files = [];
+                // Try to extract .json files from the directory listing
+                text.replace(/href="([^\"]+\.json)"/g, (match, filename) => {
+                    files.push(filename);
+                });
+                // Add each file as an option
+                files.forEach(file => {
+                    // Make a nice label (remove .json, replace _ with space, capitalize)
+                    const label = file.replace('.json', '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                    const option = document.createElement('option');
+                    option.value = file;
+                    option.textContent = label;
+                    dropdown.appendChild(option);
+                });
+            });
+    });
+    </script>
+</body>
+</html>
